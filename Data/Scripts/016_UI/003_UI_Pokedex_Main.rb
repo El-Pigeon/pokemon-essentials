@@ -377,11 +377,6 @@ class PokemonPokedex_Scene
       dexlist[0] = nil if dexlist[0][5] && !$player.seen?(dexlist[0][0])
       # Remove unseen species from the end of the list
       i = dexlist.length - 1
-      loop do
-        break if i < 0 || !dexlist[i] || $player.seen?(dexlist[i][0])
-        dexlist[i] = nil
-        i -= 1
-      end
       dexlist.compact!
       # Sort species in ascending order by Regional Dex number
       dexlist.sort! { |a, b| a[4] <=> b[4] }
@@ -414,7 +409,6 @@ class PokemonPokedex_Scene
     base   = Color.new(88, 88, 80)
     shadow = Color.new(168, 184, 184)
     iconspecies = @sprites["pokedex"].species
-    iconspecies = nil if !$player.seen?(iconspecies)
     # Write various bits of text
     dexname = _INTL("Pokédex")
     if $player.pokedex.dexes_count > 1
@@ -426,7 +420,7 @@ class PokemonPokedex_Scene
     textpos = [
       [dexname, Graphics.width / 2, 10, 2, Color.new(248, 248, 248), Color.new(0, 0, 0)]
     ]
-    textpos.push([GameData::Species.get(iconspecies).name, 112, 58, 2, base, shadow]) if iconspecies
+    textpos.push([GameData::Species.get(iconspecies).name, 112, 58, 2, base, shadow]) if $player.seen?(iconspecies)
     if @searchResults
       textpos.push([_INTL("Search results"), 112, 314, 2, base, shadow])
       textpos.push([@dexlist.length.to_s, 112, 346, 2, base, shadow])
@@ -761,6 +755,11 @@ class PokemonPokedex_Scene
     gender, form, shiny = $player.pokedex.last_form_seen(species)
     shiny = false
     @sprites["icon"].setSpeciesBitmap(species, gender, form, shiny)
+    if !$player.seen?(@sprites["pokedex"].species)
+      @sprites["icon"].tone = Tone.new(-255,-255,-255,255)
+    else
+      @sprites["icon"].tone = Tone.new(0,0,0,0)
+    end
   end
 
   def pbSearchDexList(params)
